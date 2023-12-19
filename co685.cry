@@ -1,0 +1,50 @@
+// Benaloh Encryption Scheme in Cryptol
+
+// Define the modulus n as the product of two primes p and q
+p : Integer
+p = 11  // Example prime number
+
+q : Integer
+q = 17  // Example prime number
+
+n : Integer
+n = p * q
+
+// Define r
+r : Integer
+r = 3  // Example small integer
+
+// Encryption function
+encrypt : Integer -> Integer -> Integer
+encrypt m y = (y ^^ r * m) % n
+
+// Modular inverse function
+modInverse : Integer -> Integer -> Integer
+modInverse a m = if inv < 0 then inv + m else inv
+  where
+    inv = euclidean a m
+
+// Extended Euclidean Algorithm to find the modular inverse
+euclidean : Integer -> Integer -> Integer
+euclidean a m = loop a m 0 1
+  where
+    loop oldR r oldS s = 
+      if r == 0 then
+        oldS
+      else
+        loop r (oldR - quotient * r) s (oldS - quotient * s)
+          where
+            quotient = oldR // r
+
+
+// Decryption function using modInverse
+decrypt : Integer -> Integer
+decrypt c = crt [(c % p) ^^ (modInverse r (p-1)) % p, (c % q) ^^ (modInverse r (q-1)) % q] [p, q]
+
+// Chinese Remainder Theorem implementation
+crt : [2]Integer -> [2]Integer -> Integer
+crt [a1, a2] [n1, n2] = (a1 * (n2 * (modInverse n2 n1)) + a2 * (n1 * (modInverse n1 n2))) % (n1 * n2)
+
+// Property to check if encryption followed by decryption returns the original message
+property encryptDecryptIdentity (message : Integer, y : Integer) =
+    (y % n != 0) ==> (decrypt (encrypt message y) == message)
